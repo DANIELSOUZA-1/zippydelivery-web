@@ -4,6 +4,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
+import ProtectedRoute from "./pages/util/ProtectedRoute";
 // Pages
 import ConfirmEmailPage from './pages/auth/actions/confirmEmail';
 import ResetPasswordPage from './pages/auth/actions/resetPassword';
@@ -18,6 +19,8 @@ import MenuManagerPage from './pages/menu/MenuManager';
 import OrderHistoryPage from './pages/order-history/OrderHistory';
 import OrderManagerPage from './pages/order-manager/OrderManager';
 import ProdutoRegister from './pages/produtos/produtos';
+import CadCupomDesconto from "./pages/cupomDesconto/CadCupomDesconto";
+import CupomDesconto from './pages/cupomDesconto/CupomDesconto';
 import ProfilePage from './pages/profile/ProfilePage';
 
 // ADM
@@ -44,6 +47,7 @@ const router = createBrowserRouter([
       },
       {
         path: "confirm-email",
+
         element: <ConfirmEmailPage />
       },
       {
@@ -52,35 +56,37 @@ const router = createBrowserRouter([
       },
       {
         path: "home",
-        element: <HomePage />
+        element: <ProtectedRoute>
+          <HomePage />
+          </ProtectedRoute>
       },
       {
         path: "produto",
-        element: <ProdutoRegister />
+        element: <ProtectedRoute><ProdutoRegister /></ProtectedRoute>
       },
       {
         path: "profile",
-        element: <ProfilePage />
+        element: <ProtectedRoute><ProfilePage /></ProtectedRoute>
       },
       {
         path: "menu-manager",
-        element: <MenuManagerPage />
+        element: <ProtectedRoute><MenuManagerPage /></ProtectedRoute>
       },
       {
         path: "category-edit",
-        element: <CategoryEditPage />
+        element: <ProtectedRoute><CategoryEditPage /></ProtectedRoute>
       },
       {
         path: "order-manager",
-        element: <OrderManagerPage />
+        element: <ProtectedRoute><OrderManagerPage /></ProtectedRoute>
       },
       {
         path: "init",
-        element: <InitialPage />
+        element: <ProtectedRoute><InitialPage /></ProtectedRoute>
       },
       {
         path: "order-history",
-        element: <OrderHistoryPage />
+        element: <ProtectedRoute><OrderHistoryPage /></ProtectedRoute>
       },
       {
         path: "adm/home-adm",
@@ -109,6 +115,15 @@ const router = createBrowserRouter([
       {
         path: "adm/informacoes",
         element: <InformacoesPage/>
+      },
+      {
+        path: "cupom-desconto",
+        element: <CupomDesconto/>
+      },
+     
+      {
+        path: "cadastro-cupom-desconto",
+        element: <CadCupomDesconto/>
       },
      
     ]
