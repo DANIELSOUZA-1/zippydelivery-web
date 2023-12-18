@@ -51,7 +51,7 @@ function OrderManagerPage() {
       
       if (ordersData.data.length > 0) {
         setOrders({
-          pending: ordersData.data.filter(order => order.statusPedido === "Em Processamento"),
+          pending: ordersData.data.filter(order => order.statusPedido === "Pendente"),
           inProcess: ordersData.data.filter(order => order.statusPedido === "Em preparo"),
           done: ordersData.data.filter(order => order.statusPedido === "Concluído"),
           cancelled: ordersData.data.filter(order => order.statusPedido === "Cancelado"),
