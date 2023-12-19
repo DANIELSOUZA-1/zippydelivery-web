@@ -4,6 +4,7 @@ import eloLogo from '../../assets/img/elo.png';
 import mastercardLogo from '../../assets/img/mastercard.png';
 import pixLogo from '../../assets/img/pix.png';
 import visaLogo from '../../assets/img/visa.png';
+import vrLogo from '../../assets/img/vr.png'
 import profileService from './profileService';
 
 import { storage } from '../../firebase';
@@ -13,12 +14,7 @@ import ImageUploading from 'react-images-uploading';
 import axios from 'axios';
 import utilService from '../../utilService';
 
-function ProfilePage() {
-  
-
-  
-
-  
+function ProfilePage() {  
 
   const [idEmpresa, setIdEmpresa] = useState('');
   const [nome, setNome] = useState('');
@@ -40,9 +36,17 @@ function ProfilePage() {
   const [logradouro, setLogradouro] = useState('');
   const [bairro, setBairro] = useState('');
   const [cidade, setCidade] = useState('');
+  const [numeroEndereco, setNumeroEndereco] = useState('');
+  const [status, setStatus] = useState('');
   const [estado, setEstado] = useState('');
   const [complemento, setComplemento] = useState('');
+  const [cidadeEntrega, setCidadeEntrega] = useState('');
+  const [uf, setUf] = useState('');
   const [categorias, setCategorias] = useState('');
+
+  const [formasPagamentoSelecionadas, setFormasPagamentoSelecionadas] = useState([]);
+
+  const [isProfile, setIsProfile] = useState(true);
 
   const { state } = useLocation();
 
@@ -68,20 +72,31 @@ function ProfilePage() {
 
       const empresas = await profileService.getAll();
 
-      const empresa = await profileService.getEmpresa(parseInt(empresaId)+1).then(response => {
+      const empresa = await profileService.getEmpresa(parseInt(empresaId) + 1).then(response => {
          
         let empresa = response.data;
+
+        // 
+
 
         setIdEmpresa(empresa.id);
         setCategoria(empresa.categoria || "");
         setCnpj(empresa.cnpj || "");
         setEmail(empresa.email || "");
-        setImgCapa(empresa.imgCapa || "");
+        setImgBanner(empresa.imgCapa || "");
         setImgPerfil(empresa.imgPerfil || "");
         setNome(empresa.nome || "");
+        setStatus(empresa.status || "");
+        setLogradouro(empresa.logradouro || "");
+        setBairro(empresa.bairro || "");
+        setNumeroEndereco(empresa.numeroEndereco || "");
+        setCidade(empresa.cidade || "");
+        setEstado(empresa.estado || "");
+        setCep(empresa.cep || "");
         setTaxaFrete(empresa.taxaFrete || "");
         setTelefone(empresa.telefone || "");
         setTempoEntrega(empresa.tempoEntrega || "");
+        setFormasPagamentoSelecionadas(empresa.formasPagamento || "");
       });
 
     };
@@ -93,45 +108,52 @@ function ProfilePage() {
      ;
     profileService.deleteEmpresa(idEmpresa);
   }
-  function pegaId(categoria) {
-    var cat = categorias.filter((cat) => {
-      return cat.descricao == categoria;
-    });
-    
-    if (cat.length > 0) {
-      return cat[0].id;
-    } else {
-      // Trate o caso em que a categoria não foi encontrada, por exemplo, retornando null
-      return null;
-    }
-  }
 
-  console.log(pegaId(categoria))
+
+  const handleSelecionarFormaPagamento = (formaPagamento) => {
+    const formaIndex = formasPagamentoSelecionadas.indexOf(formaPagamento);
+    let newFormasPagamento = [...formasPagamentoSelecionadas];
+
+    if (formaIndex === -1) {
+      newFormasPagamento = [...newFormasPagamento, formaPagamento];
+    } else {
+      newFormasPagamento = newFormasPagamento.filter((item) => item !== formaPagamento);
+    }
+
+    setFormasPagamentoSelecionadas(newFormasPagamento);
+  };
+  console.log(formasPagamentoSelecionadas)
+
+  const formaPagamentoEstaSelecionada = (formaPagamento) => {
+    return formasPagamentoSelecionadas.includes(formaPagamento);
+  };
+
   function onSubmit() {
+
+    // 
+
 
     let body = {
       id: idEmpresa,
-      nome: nome,
-      cnpj: cnpj,
-      email: email,
-      cep: cep,
-      idCategoria: pegaId(categoria),
-      tempoEntrega: tempoEntrega,
-      taxaFrete: taxaFrete,
-      telefone: telefone,
-      imgPerfil: imgPerfil,
-      imgCapa: imgCapa,
-      logradouro: logradouro,
-      bairro: bairro,
-      cidade: cidade,
-      estado: estado,
-      complemento: complemento,
-      formasPagamento: ['DINHEIRO',
-        'CARTAO_CREDITO',
-        'CARTAO_DEBITO',
-        'PIX',
-        'VALE_ALIMENTACAO',
-        'OUTRAS']
+      nome: nome || "",
+      cnpj: cnpj || "",
+      email: email || "",
+      cep: cep || "",
+      idCategoria: categoria.id || "",
+      tempoEntrega: tempoEntrega || "",
+      taxaFrete: taxaFrete || "",
+      telefone: telefone || "",
+      imgPerfil: imgPerfil || "",
+      imgCapa: imgBanner || "",
+      logradouro: logradouro || "",
+      bairro: bairro || "",
+      status: status || "",
+      cidade: cidade || "",
+      estado: estado || "",
+      complemento: complemento || "",
+
+      formasPagamento: formasPagamentoSelecionadas
+
     };
 
     let result = profileService.createEmpresa(body, idEmpresa);
@@ -141,12 +163,12 @@ function ProfilePage() {
   const maxNumber = 69;
 
   const onChangeProfileImage = (imageList, addUpdateIndex) => {
-     ;
+
     // data for submit
     console.log(imageList, addUpdateIndex);
     console.log(imageList[0].file);
     setProfileImage(imageList[0]);
-    handleSubmit(imageList[0], true)
+    handleSubmit(imageList[0], isProfile)
   };
 
   function handleSubmit(image, isProfileImage) {
@@ -190,7 +212,7 @@ function ProfilePage() {
           onChange={onChangeProfileImage}
           maxNumber={maxNumber}
           dataURLKey="data_url"
-        >
+          >
           {({
             imageList,
             onImageUpload,
@@ -202,7 +224,10 @@ function ProfilePage() {
           }) => (
             <div>
               <div className="p-1 flex justify-end bg-gray-100 w-full h-48 rounded-md">
-                <span className="hover:bg-gray-300 w-fit h-fit rounded-full p-1.5 transition-all">
+                {imgBanner ? 
+                  <img src={imgBanner} className=" w-full h-full" alt="" width="100" /> : <div></div>
+                }
+                <span onClick={() => {onImageUpload(); setIsProfile(false)}} className="hover:bg-gray-300 w-fit h-fit rounded-full p-1.5 transition-all">
                   <svg
                     className="w-6 h-6 cursor-pointer "
                     xmlns="http://www.w3.org/2000/svg"
@@ -219,16 +244,16 @@ function ProfilePage() {
                   </svg>
                 </span>
               </div>
-              <div onClick={onImageUpload}
+              <div onClick={() => {onImageUpload(); setIsProfile(true)}}
                 className="relative group cursor-pointer hover:shadow-lg transition-all flex items-center justify-center bg-gray-200 w-36 h-36 rounded-full mx-auto -translate-y-1/2 overflow-hidden"
-              >
+                >
                 
                 {/*{profileImage['data_url'] ?*/}
                 {imgPerfil ?
                   <div className=" flex items-center justify-center">
                     {/*<img src={profileImage['data_url']} className="object-cover" alt="" width="100" />*/}
-                    <img src={imgPerfil} className="object-cover" alt="" width="100" />
-                    <div className="opacity-0 text-white group-hover:opacity-100 absolute bg-gray-800/70 flex w-full h-full items-center justify-center">
+                    <img src={imgPerfil} className="object-cover w-full h-full" alt="" width="100" />
+                    <div className="opacity-0 text-white group-hover:opacity-100 absolute bg-gray-800/70 flex w-full h-full  items-center justify-center">
                       New Image
                     </div>
                   </div>
@@ -250,7 +275,7 @@ function ProfilePage() {
                 }
               </div>
               <button
-                type="submit"
+                onClick={onSubmit}
                 className="flex items-center primary-button px-20 ml-auto -mt-12"
               >
                 Salvar
@@ -314,7 +339,7 @@ function ProfilePage() {
                       Selecione uma categoria
                     </option>
                     {(categorias || []).map((cat) => (
-                      <option key={cat.id} value={cat.descricao}>
+                      <option key={cat.id} value={cat.id}>
                         {cat.descricao}
                       </option>
                     ))}
@@ -369,7 +394,8 @@ function ProfilePage() {
               <div className="flex gap-4">
                 <div className="flex flex-col w-2/12 gap-1">
                   <span>Número</span>
-                  <input className="form-input" type="text" />
+                  <input className="form-input" type="text"  value={numeroEndereco}
+                    onChange={(e) => setNumeroEndereco(e.target.value)}/>
                 </div>
                 <div className="flex flex-col w-6/12 gap-1">
                   <span>Cidade</span>
@@ -450,7 +476,7 @@ function ProfilePage() {
                   </svg>
                 </span>
               </div>
-              <span className="cursor-pointer hover:text-opacity-70 transition-all flex gap-1 text-secondary font-medium text-sm w-fit border-b-[1.2px] border-b-gray-500">
+              {/*<span className="cursor-pointer hover:text-opacity-70 transition-all flex gap-1 text-secondary font-medium text-sm w-fit border-b-[1.2px] border-b-gray-500">
                 <span>Adicionar mais um local</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -465,6 +491,7 @@ function ProfilePage() {
                   />
                 </svg>
               </span>
+              */}
             </div>
             {/* Session End */}
           </div>
@@ -479,27 +506,48 @@ function ProfilePage() {
                 <div className="flex flex-col w-3/4 gap-2">
                   <span>Métodos de pagamento aceitos</span>
                   <div className="flex gap-2">
-                    <div className="flex items-center cursor-pointer justify-center w-[4.8rem] h-12 ring-1 ring-gray-300 rounded-sm">
-                      <div className="w-fit">
-                        <img src={eloLogo} alt="react logo" />
-                      </div>
-                    </div>
-                    <div className="flex items-center cursor-pointer justify-center w-[4.8rem] h-12 ring-2 ring-orange-100 rounded-sm">
-                      <div className="w-fit">
+                    <div
+                    className={`flex cursor-pointer items-center justify-center w-[4.8rem] h-12 rounded-sm ${
+                    formaPagamentoEstaSelecionada('CARTAO_CREDITO') ? 'ring-2 ring-orange-100' : 'ring-1 ring-gray-300'}`}
+                    onClick={() => handleSelecionarFormaPagamento('CARTAO_CREDITO')}
+                  >
+                      <div className="w-fit ">
                         <img src={mastercardLogo} alt="react logo" />
                       </div>
                     </div>
-                    <div className="flex items-center cursor-pointer justify-center w-[4.8rem] h-12 ring-1 ring-gray-300 rounded-sm">
+                    <div
+                    className={`flex  cursor-pointer items-center justify-center w-[4.8rem] h-12 rounded-sm ${
+                    formaPagamentoEstaSelecionada('CARTAO_DEBITO') ? 'ring-2 ring-orange-100' : 'ring-1 ring-gray-300'}`}
+                    onClick={() => handleSelecionarFormaPagamento('CARTAO_DEBITO')}
+                  >
                       <div className="w-fit">
                         <img src={visaLogo} alt="react logo" />
                       </div>
                     </div>
-                    <div className="flex items-center cursor-pointer justify-center w-[4.8rem] h-12 ring-2 ring-orange-100 rounded-sm">
+                    <div
+                    className={`flex cursor-pointer items-center justify-center w-[4.8rem] h-12 rounded-sm ${
+                    formaPagamentoEstaSelecionada('PIX') ? 'ring-2 ring-orange-100' : 'ring-1 ring-gray-300'}`}
+                    onClick={() => handleSelecionarFormaPagamento('PIX')}
+                  >
                       <div className="w-fit">
                         <img src={pixLogo} alt="react logo" />
                       </div>
                     </div>
-                    <div className="flex items-center cursor-pointer justify-center w-[4.8rem] h-12 ring-2 ring-orange-100 rounded-sm">
+                  <div
+                    className={`flex cursor-pointer items-center justify-center w-[4.8rem] h-12 rounded-sm ${
+                      formaPagamentoEstaSelecionada('VALE_ALIMENTACAO') ? 'ring-2 ring-orange-100' : 'ring-1 ring-gray-300'
+                    }`}
+                    onClick={() => handleSelecionarFormaPagamento('VALE_ALIMENTACAO')}
+                  >
+                    <div className="w-[4.8rem] h-12 flex items-center justify-center">
+                      <img src={vrLogo} alt="React Logo" className="h-8 w-8" />
+                    </div>
+                  </div>
+                    <div
+                    className={`flex cursor-pointer items-center justify-center w-[4.8rem] h-12 rounded-sm ${
+                    formaPagamentoEstaSelecionada('DINHEIRO') ? 'ring-2 ring-orange-100' : 'ring-1 ring-gray-300'}`}
+                    onClick={() => handleSelecionarFormaPagamento('DINHEIRO')}
+                  >
                       <div className="w-fit">
                         <span className="font-bold">R$</span>
                       </div>
